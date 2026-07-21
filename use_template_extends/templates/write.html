@@ -1,0 +1,17 @@
+<!-- 「base.html」を継承 -->
+{% extends "base.html" %}
+
+<!-- タイトルブロックを書き換える -->
+{% block title %}
+掲示板の書き込みページ
+{%endblock%}
+
+<!-- ヘッダーブロックを書き換える -->
+{% block header %}
+掲示板の書き込みページ
+{%endblock%}
+
+<!-- コンテンツブロックを書き換える -->
+{% block contents %}
+{{super()}}
+{%endblock%}
