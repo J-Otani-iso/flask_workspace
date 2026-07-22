@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, render_template, request
 
 # 掲示板の一つ一つのメッセージを表すクラス
@@ -52,6 +54,15 @@ def write():
     # POSTメソッドの場合
     elif request.method == "POST":
         # POSTメソッドのフォームの値を利用し、新しい「Message」クラスインスタンスを生成
+        id: str = datetime.now().strftime("%Y%m%d%H%M%S")
+        user_name: str = request.form.get("user_name")
+        contents: str = request.form.get("contents")
+        # 「message_list」に追加して、「top.html」の表示
+        if contents:
+            message_list.insert(0, Message(id, user_name, contents))
+        return render_template(
+            "top.html", login_user_name=login_user_name, message_list=message_list
+        )
 
 if __name__ == "__main__":
     app.run(debug=True)
