@@ -110,29 +110,29 @@ def write():
 
         return redirect(url_for("index"))
 
-# 更新機能のルーティング - (*1)
+# 更新機能のルーティング
 @app.route("/update/<int:message_id>", methods=["GET", "POST"])
 def update(message_id: int):
-    # メッセージIDから更新対象のメッセージを取得 - (*2)
+    # メッセージIDから更新対象のメッセージを取得
     message: Message = Message.query.get(message_id)
 
-    # 更新画面を表示 - (*3)
+    # 更新画面を表示
     if request.method == "GET":
         return render_template("update.html", login_user_name = login_user_name, message = message)
 
-    # 更新処理 - (*4)
+    # 更新処理
     elif request.method =="POST":
         message.contents = request.form.get("contents")
         db.session.commit()
 
         return redirect(url_for("index"))
 
-# 消去機能のルーティング - (*5)
+# 消去機能のルーティング
 @app.route("/delete/<int:message_id>")
 def delete(message_id: int):
-    # メッセージIDから消去対象のメッセージを取得 - (*6)
+    # メッセージIDから消去対象のメッセージを取得
     message: Message = Message.query.get(message_id)
-    # メッセージを消去 - -(*7)
+    # メッセージを消去
     db.session.delete(message)
     db.session.commit()
 
