@@ -21,18 +21,18 @@ def index():
 # メッセージの読み込み - (*3)
 @socketio.on('load messages')
 def load_messages():
-    messages = messages_collection.find().sort('_id', -1).limit(10)
-    messages = list(messages)[::-1]
-    messages_return = [message['message'] for message in messages]
+    message_documents = messages_collection.find().sort('_id', -1).limit(10)
+    message_documents = list(message_documents)[::-1]
+    messages_texts = [document['message'] for document in message_documents]
     # メッセージをクライアントへ送信 - (*4)
-    emit('load all messages', messages_return)
+    emit('load all messages', messages_texts)
 
 # メッセージの登録 - (*5)
 @socketio.on('send message')
-def send_message(message):
-    messages_collection.insert_one({'message': message})
+def send_message(message_text):
+    messages_collection.insert_one({'message': message_text})
     # メッセージをクライアントへ送信 - (*6)
-    emit('load one message', message, broadcast=True)
+    emit('load one message', message_text, broadcast=True)
 
 
 if __name__ == "__main__":

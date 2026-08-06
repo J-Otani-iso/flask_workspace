@@ -15,10 +15,10 @@
             const messageButton = document.getElementById('send-message');
             const messageList = document.getElementById('messages')
             
-            // 受け取ったメッセージを描画する
-            const appendMessage = message => {
+            // 受け取ったメッセージを描画する - (*10)
+            const appendMessage = messageText => {
                 const li = document.createElement('li');
-                li.textContent = message;
+                li.textContent = messageText;
                 messageList.appendChild(li);
             };
 
@@ -26,7 +26,7 @@
             socket.on('connect', () => socket.emit('load messages'));
 
             // メッセージ全件受信処理 - (*12)
-            socket.on('load all messages', messages => messages.forEach(appendMessage));
+            socket.on('load all messages', messageTexts => messageTexts.forEach(appendMessage));
 
             // メッセージ送信処理 - (*13)
             messageButton.addEventListener('click', () => {
