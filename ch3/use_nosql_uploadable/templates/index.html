@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>リアルタイムチャット</title>
+    <!-- soketioの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // socket.ioのセットアップ
+            const socket = io();
+
+            const fileInput = document.getElementById('file-input');
+            const messageInput = document.getElementById('message-input');
+            const messageButton = document.getElementById('send-message');
+            const messagesList = document.getElementById('messages');
+            const canvas = document.getElementById('canvas')
+            
+            // 受け取ったメッセージと画像を描画する -{*8}
+            const appendMessage = message => {
+                let li = document.createElement('li');
+                let img = document.createElement('img');
+                img.src = "data:image/jpeg;base64," + message["image_data"];
+                li.appendChild(img);
+                li.appendChild(document.createTextNode(message["message"]));
+                messageList.appendChild(li);
+            };
+
+            // サーバーとの接続確立
+            socket.on('connect', () => {
+                socket.emit('load messages');
+            });
+
+            // メッセージ全件受信処理
+            socket.on('load all messages', messages => {
+                messagesList.innerHTML = '';
+                messages.forEach(appendMessage);
+            });
+
+            // メッセージ送信処理
+            messageButton.addEventListener('click', () => {
+                // 選択されたファイルを読み込む
+                var file = fileInput.files[0];
+                var reader = new FileReader();
+                var image = new Image();
+
+                reader.onload = function(event){
+                    
+                }
+            })
+
+            // メッセージ受信処理
+            socket.on('load one message', appendMessage);
+        });
+    </script>
+</head>
+<body>
+    <h1>リアルタイムチャット</h1>
+    <ul id="messages"></ul>
+    <input type="text" id="message-input" placeholder="メッセージを入力">
+    <button id="send-message">送信</button>
+</body>
+</html>
