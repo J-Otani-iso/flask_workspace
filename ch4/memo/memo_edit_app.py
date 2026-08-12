@@ -8,7 +8,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///memo_edit.sqlite"
 db:SQLAlchemy = SQLAlchemy(app)
 # メモのデータベースモデルを定義 -(*2)
 class MemoItem(db.Model):
-    id: int = db.Column(db.Interger, primary_key = True)
+    id: int = db.Column(db.Integer, primary_key = True)
     title: str = db.Column(db.Text, nullable = False)
     body: str = db.Column(db.Text, nullable = False)
 # データベースの初期化
@@ -28,4 +28,36 @@ HTML_EDITOR_FORM = """
     <div class="card p-3"><form method="POST">
         <label class="label">タイトル：</label>
         <input type="text" name="title" value="{title}" class="input">
+        <label class="label">本文：</label>
+        <textarea name="body" class="textarea">{body}</textarea>
+        <input type="submit" value="保存" class="button is-primary">
+    </form></div>
 """
+HTML_FOOTER = "</body></html>"
+
+# メモの編集画面を表示する -(*4)
+@app.route("/", methods=["GET", "POST"])
+def index():
+    # データベースからメモを取得 -(*5)
+    it = MemoItem.query.get(1)
+    if it is None:
+        # もし、まだメモがなければ新規メモを作成 -(*6)
+        it = MemoItem(id=1, title="無題", body="")
+        db.session.add(it)
+        db.session.commit()
+    # POSTの場合はデータを保存 -(*7)
+    if request.method == "POST":
+        it.title = request.form.get("title")
+        it.body = request.form.get("body")
+        if it.title == "":
+            return "タイトルは空にできません"
+        db.session.commit()
+        return redirect(url_for("index"))
+    # メモの編集画面を表示 -(*8)
+    title, body = escape(it.title), escape(it.body)
+    edit = HTML_EDITOR_FORM.format(title=title, body=body)
+    html = HTML_HEADER + edit + HTML_FOOTER
+    return html
+
+if __name__ == "__main__":
+    app.run(debug=True, port=8888)
