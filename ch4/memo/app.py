@@ -7,7 +7,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///memo.sqlite"
 db: SQLAlchemy = SQLAlchemy(app)
 # メモのデータベースモデルを定義
 class MemoItem(db.Model):
-    id: int = db.Column(db.Interger, primary_key=True)
+    id: int = db.Column(db.Integer, primary_key=True)
     title: str = db.Column(db.Text, nullable=False)
     body: str = db.Column(db.Text, nullable=False)
 # データベースの初期化
@@ -24,7 +24,7 @@ def index():
 @app.route("/memo/<int:id>", methods=["GET", "POST"])
 def memo(id: int):
     # メモを取得 -(*4)
-    it = MemoItem.guery.get(id)
+    it = MemoItem.query.get(id)
     if id == 0 or it is None:
         # 新規メモ -(*5)
         it = MemoItem(title="__無題__", body="")
