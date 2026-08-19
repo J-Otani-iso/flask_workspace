@@ -54,7 +54,7 @@ def index():
         db.session.commit()
         return redirect(url_for("index"))
     # メモの編集画面を表示 -(*8)
-    title, body = escape(it.title), escape(it.body)
+    title, body = it.title, it.body
     edit = HTML_EDITOR_FORM.format(title=title, body=body)
     html = HTML_HEADER + edit + HTML_FOOTER
     return html

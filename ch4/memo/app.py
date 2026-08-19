@@ -17,7 +17,7 @@ with app.app_context():
 @app.route("/")
 def index():
     items = MemoItem.query.order_by(MemoItem.title).all()
-    items.insert(0, {"id": 0, "title": "新規作成", "body": ""})
+    items.insert(0, {"id": 0, "title": "🖌新規作成", "body": ""})
     return render_template("list.html", items=items)
 
 # メモの編集画面を出す -(*3)
@@ -25,7 +25,7 @@ def index():
 def memo(id: int):
     # メモを取得 -(*4)
     it = MemoItem.guery.get(id)
-    if id == o or it is None:
+    if id == 0 or it is None:
         # 新規メモ -(*5)
         it = MemoItem(title="__無題__", body="")
     # POSTの場合はデータを保存 -(*6)
@@ -38,7 +38,7 @@ def memo(id: int):
             db.session.add(it)
         db.session.commit()
         return redirect(url_for("index"))
-    # メモの編集画面を表示
+    # メモの編集画面を表示 -(*7)
     return render_template("memo.html", it=it)
 
 if __name__ == "__main__":
