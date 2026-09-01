@@ -22,3 +22,30 @@ def index_get():
     month = int(request.args.get("month", now.month))
     # 月曜始まりのカレンダーを作成
     cal = calendar.Calendar(calendar.MONDAY)
+    weeks = cal.monthdayscalendar(year, month)
+    # 翌月と前月のリンクを作成
+    next_year = year
+    next_month = month + 1
+    if next_month > 12:
+        next_month, next_year = 1, year + 1
+    prev_year = year
+    prev_month = month - 1
+    if prev_month < 1:
+        prev_month, prev_year = 12, year - 1
+    next_link = f"?year={next_year}&month={next_month}"
+    prev_link = f"?year={prev_year}&month={prev_month}"
+    # カレンダーをテンプレートエンジンで表示
+    return render_template("index.html",
+                           weeknames = list("月火水木金土日"),
+                           year = year, month = month,
+                           weeks = weeks, events = events,
+                           next_link = next_link, prev_link = prev_link)
+
+# ルートへPOSTアクセスしたとき
+@app.route("/", methods = ["POST"])
+def index_post():
+    # パラメータを得る
+    date = request.form.get("date", "")
+    event = request.form.get("event", "")
+    # 入力を検証する
+    i = re.match(r"(\d{4})-(\d{2})-(\d{2})", date)
