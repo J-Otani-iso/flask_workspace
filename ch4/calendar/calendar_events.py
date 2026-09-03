@@ -49,3 +49,15 @@ def index_post():
     event = request.form.get("event", "")
     # 入力を検証する
     i = re.match(r"(\d{4})-(\d{2})-(\d{2})", date)
+    if not i:
+        return "日付形式が不正"
+    year, month = int(i.group(1)), int(i.group(2))
+    # イベントを年月日に追加
+    events[date] = event
+    # ファイルに保存
+    with open(SAVE_FILE, "w") as f:
+        json.dump(events, f, ensure_ascii=False, indent=2)
+    return redirect(url_for("index_get", year=year, month=month))
+
+if __name__ == "__main__":
+    app.run(debug=True)
