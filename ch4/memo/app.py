@@ -1,17 +1,16 @@
 import os
 
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
+
 
 # Flaskアプリの初期化
 app: Flask = Flask(__name__)
 
-# データベース接続先を取得
-# RenderではDATABASE_URLを使用し、
-# ローカルではSQLiteを使用する
+# RenderではPostgreSQL、ローカルではSQLiteを使用
 database_url = os.environ.get("DATABASE_URL", "sqlite:///memo.sqlite")
 
-# RenderのPostgreSQL URLをpsycopg用に変換
+# psycopgを使用する形式に変換
 if database_url.startswith("postgresql://"):
     database_url = database_url.replace(
         "postgresql://",
@@ -24,20 +23,20 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 db: SQLAlchemy = SQLAlchemy(app)
 
 
-# メモのデータベースモデルを定義
+# メモのデータベースモデル
 class MemoItem(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     title: str = db.Column(db.Text, nullable=False)
     body: str = db.Column(db.Text, nullable=False)
 
 
-# データベースの初期化
+# テーブル作成
 with app.app_context():
     db.create_all()
 
 
-# メモ一覧を表示する
-@app.route("/")
+# メモ一覧を表示
+@app.route("/", methods=["GET"])
 def index():
     items = MemoItem.query.order_by(MemoItem.title).all()
 
@@ -53,50 +52,99 @@ def index():
     return render_template("list.html", items=items)
 
 
-# メモの編集画面を出す
-@app.route("/memo/<int:id>", methods=["GET", "POST"])
+# メモ編集画面を表示
+@app.route("/memo/<int:id>", methods=["GET"])
 def memo(id: int):
 
-    # メモを取得
-    it = db.session.get(MemoItem, id)
-
-    if id == 0 or it is None:
-        # 新規メモ
+    # 新規作成の場合
+    if id == 0:
         it = MemoItem(
             title="__無題__",
             body=""
         )
 
-    # POSTの場合はデータを保存
-    if request.method == "POST":
+    else:
+        it = db.session.get(MemoItem, id)
 
-        it.title = request.form.get(
-            "title",
-            "__無題__"
-        )
+        if it is None:
+            return "メモが見つかりません", 404
 
-        it.body = request.form.get(
-            "body",
-            ""
-        )
+    return render_template("memo.html", it=it)
 
-        if it.title == "":
-            return "タイトルは空にできません"
 
-        if id == 0:
-            db.session.add(it)
+# 新規メモを作成
+@app.route("/memo", methods=["POST"])
+def create_memo():
 
-        db.session.commit()
+    title = request.form.get("title", "__無題__")
+    body = request.form.get("body", "")
 
-        return redirect(
-            url_for("index")
-        )
+    if title == "":
+        return "タイトルは空にできません", 400
 
-    # メモの編集画面を表示
-    return render_template(
-        "memo.html",
-        it=it
+    item = MemoItem(
+        title=title,
+        body=body
     )
+
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect(url_for("index"))
+
+
+# 既存メモを更新
+@app.route("/memo/<int:id>", methods=["PATCH"])
+def update_memo(id: int):
+
+    item = db.session.get(MemoItem, id)
+
+    if item is None:
+        return jsonify({
+            "message": "メモが見つかりません"
+        }), 404
+
+    data = request.get_json()
+
+    title = data.get("title")
+    body = data.get("body")
+
+    if title is not None:
+
+        if title == "":
+            return jsonify({
+                "message": "タイトルは空にできません"
+            }), 400
+
+        item.title = title
+
+    if body is not None:
+        item.body = body
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "メモを更新しました"
+    }), 200
+
+
+# メモを削除
+@app.route("/memo/<int:id>", methods=["DELETE"])
+def delete_memo(id: int):
+
+    item = db.session.get(MemoItem, id)
+
+    if item is None:
+        return jsonify({
+            "message": "メモが見つかりません"
+        }), 404
+
+    db.session.delete(item)
+    db.session.commit()
+
+    return jsonify({
+        "message": "メモを削除しました"
+    }), 200
 
 
 if __name__ == "__main__":
