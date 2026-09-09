@@ -41,7 +41,21 @@ def update_user(id):
 
             return user, 200
 
-        return {"message": "User not found"}, 404
+    return {"message": "User not found"}, 404
+
+# ユーザー情報を全体更新
+@app.route("/users/<int:id>", methods=["PUT"])
+def replace_user(id):
+    data = request.get_json()
+
+    for user in users:
+        if user["id"] == id:
+            user["name"] = data["name"]
+            user["age"] = data["age"]
+
+            return user, 200
+
+    return {"message": "User not found"}, 404
 
 # ユーザーを消去
 @app.route("/users/<int:id>", methods=["DELETE"])

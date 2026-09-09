@@ -43,6 +43,25 @@ print("PACTH後の結果")
 response = requests.get(url)
 print(response.json())
 
+# PUT
+replace_data = {
+    "name": "Kubo",
+    "age": 25
+}
+
+response = requests.put(
+    "http://127.0.0.1:5000/users/2",
+    json=replace_data
+)
+
+print("PUT")
+print(response.status_code)
+print(response.json())
+
+print("PUT後の結果")
+response = requests.get(url)
+print(response.json())
+
 # DELETE
 response = requests.delete(
     "http://127.0.0.1:5000/users/3"
